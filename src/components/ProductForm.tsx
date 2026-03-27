@@ -1,13 +1,16 @@
-import { useState } from 'react';
-import { Product } from '@/lib/shopee';
+import { useState, useEffect } from 'react';
+import { Product, CATEGORIES } from '@/lib/shopee';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Package, DollarSign, Truck, Percent, Plus } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Package, DollarSign, Truck, Percent, Plus, Save } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface ProductFormProps {
   onSubmit: (product: Omit<Product, 'id'>) => void;
   initialData?: Product;
+  onCancel?: () => void;
 }
 
 const defaultProduct = {
@@ -19,15 +22,20 @@ const defaultProduct = {
   shopeeCommission: 12,
   additionalFees: 0,
   quantity: 1,
+  category: '',
 };
 
-export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
+export function ProductForm({ onSubmit, initialData, onCancel }: ProductFormProps) {
   const [form, setForm] = useState(initialData || defaultProduct);
+
+  useEffect(() => {
+    if (initialData) setForm(initialData);
+  }, [initialData]);
 
   const handleChange = (field: string, value: string) => {
     setForm(prev => ({
       ...prev,
-      [field]: field === 'name' ? value : Number(value) || 0,
+      [field]: field === 'name' || field === 'category' ? value : Number(value) || 0,
     }));
   };
 
@@ -35,11 +43,24 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
     e.preventDefault();
     if (!form.name.trim()) return;
     onSubmit(form);
-    setForm(defaultProduct);
+    if (!initialData) setForm(defaultProduct);
   };
 
+  // Live preview of profit
+  const costPerUnit = form.costPrice + form.packagingCost + form.shippingCost;
+  const revenue = form.sellingPrice * form.quantity;
+  const shopeeFee = revenue * (form.shopeeCommission / 100);
+  const totalCost = costPerUnit * form.quantity + shopeeFee + form.additionalFees;
+  const estimatedProfit = revenue - totalCost;
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <motion.form
+      onSubmit={handleSubmit}
+      className="space-y-5"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="space-y-2">
         <Label htmlFor="name" className="flex items-center gap-2 text-sm font-medium text-foreground">
           <Package className="h-4 w-4 text-primary" />
@@ -54,11 +75,25 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
         />
       </div>
 
+      <div className="space-y-2">
+        <Label className="text-sm font-medium text-foreground">Categoria</Label>
+        <Select value={form.category} onValueChange={v => handleChange('category', v)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Selecione uma categoria" />
+          </SelectTrigger>
+          <SelectContent>
+            {CATEGORIES.map(cat => (
+              <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label className="flex items-center gap-2 text-sm font-medium text-foreground">
             <DollarSign className="h-4 w-4 text-primary" />
-            Custo do Produto (R$)
+            Custo (R$)
           </Label>
           <Input
             type="number"
@@ -120,7 +155,7 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
         <div className="space-y-2">
           <Label className="flex items-center gap-2 text-sm font-medium text-foreground">
             <Percent className="h-4 w-4 text-primary" />
-            Comissão Shopee (%)
+            Comissão (%)
           </Label>
           <Input
             type="number"
@@ -133,7 +168,7 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
           />
         </div>
         <div className="space-y-2">
-          <Label className="text-sm font-medium text-foreground">Taxas Adicionais (R$)</Label>
+          <Label className="text-sm font-medium text-foreground">Taxas (R$)</Label>
           <Input
             type="number"
             step="0.01"
@@ -155,10 +190,32 @@ export function ProductForm({ onSubmit, initialData }: ProductFormProps) {
         </div>
       </div>
 
-      <Button type="submit" className="w-full gap-2">
-        <Plus className="h-4 w-4" />
-        {initialData ? 'Atualizar Produto' : 'Adicionar Produto'}
-      </Button>
-    </form>
+      {/* Live profit preview */}
+      {form.sellingPrice > 0 && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className={`rounded-lg p-3 text-sm font-medium border ${
+            estimatedProfit >= 0
+              ? 'bg-success/10 text-success border-success/20'
+              : 'bg-destructive/10 text-destructive border-destructive/20'
+          }`}
+        >
+          Lucro estimado: R$ {estimatedProfit.toFixed(2)}
+        </motion.div>
+      )}
+
+      <div className="flex gap-2">
+        <Button type="submit" className="flex-1 gap-2">
+          {initialData ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+          {initialData ? 'Salvar Alterações' : 'Adicionar Produto'}
+        </Button>
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancelar
+          </Button>
+        )}
+      </div>
+    </motion.form>
   );
 }

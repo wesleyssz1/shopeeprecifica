@@ -21,7 +21,7 @@ export function useProducts() {
 
   const addProduct = useCallback((product: Omit<Product, 'id'>) => {
     setProducts(prev => {
-      const next = [...prev, { ...product, id: generateId() }];
+      const next = [...prev, { ...product, id: generateId(), createdAt: new Date().toISOString() }];
       saveProducts(next);
       return next;
     });
@@ -43,5 +43,16 @@ export function useProducts() {
     });
   }, []);
 
-  return { products, addProduct, updateProduct, deleteProduct };
+  const duplicateProduct = useCallback((id: string) => {
+    setProducts(prev => {
+      const original = prev.find(p => p.id === id);
+      if (!original) return prev;
+      const copy = { ...original, id: generateId(), name: `${original.name} (cópia)`, createdAt: new Date().toISOString() };
+      const next = [...prev, copy];
+      saveProducts(next);
+      return next;
+    });
+  }, []);
+
+  return { products, addProduct, updateProduct, deleteProduct, duplicateProduct };
 }
