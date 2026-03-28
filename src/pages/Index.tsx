@@ -14,7 +14,7 @@ import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 const Index = () => {
-  const { products, addProduct, updateProduct, deleteProduct, duplicateProduct } = useProducts();
+  const { products, loading, addProduct, updateProduct, deleteProduct, duplicateProduct } = useProducts();
   const { toast } = useToast();
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -28,29 +28,40 @@ const Index = () => {
     );
   }, [products, searchQuery]);
 
-  const handleAdd = (product: Omit<Product, 'id'>) => {
-    addProduct(product);
+  const handleAdd = async (product: Omit<Product, 'id'>) => {
+    await addProduct(product);
     toast({ title: 'Produto adicionado!', description: product.name });
   };
 
-  const handleUpdate = (product: Omit<Product, 'id'>) => {
+  const handleUpdate = async (product: Omit<Product, 'id'>) => {
     if (editingProduct) {
-      updateProduct(editingProduct.id, product);
+      await updateProduct(editingProduct.id, product);
       toast({ title: 'Produto atualizado!', description: product.name });
       setEditingProduct(null);
     }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     const p = products.find(p => p.id === id);
-    deleteProduct(id);
+    await deleteProduct(id);
     toast({ title: 'Produto excluído', description: p?.name, variant: 'destructive' });
   };
 
-  const handleDuplicate = (id: string) => {
-    duplicateProduct(id);
+  const handleDuplicate = async (id: string) => {
+    await duplicateProduct(id);
     toast({ title: 'Produto duplicado!' });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header products={[]} />
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -60,7 +71,6 @@ const Index = () => {
         <DashboardCards products={products} />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left column: Form + Simulator */}
           <div className="lg:col-span-1 space-y-6">
             <div className="rounded-xl border border-border bg-card p-6 shadow-card sticky top-8">
               <Tabs defaultValue="cadastro">
@@ -89,7 +99,6 @@ const Index = () => {
             </div>
           </div>
 
-          {/* Right column: Table + Charts */}
           <div className="lg:col-span-2 space-y-6">
             <motion.div
               className="rounded-xl border border-border bg-card p-6 shadow-card"
