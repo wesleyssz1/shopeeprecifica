@@ -1,8 +1,9 @@
-import { ShoppingBag, Moon, Sun, Download } from 'lucide-react';
+import { ShoppingBag, Moon, Sun, Download, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/hooks/useTheme';
 import { exportProductsToCSV, Product } from '@/lib/shopee';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface HeaderProps {
   products?: Product[];
@@ -11,6 +12,7 @@ interface HeaderProps {
 export function Header({ products = [] }: HeaderProps) {
   const { theme, toggleTheme } = useTheme();
   const { toast } = useToast();
+  const { user, signOut } = useAuth();
 
   const handleExport = () => {
     if (products.length === 0) {
@@ -26,6 +28,11 @@ export function Header({ products = [] }: HeaderProps) {
     a.click();
     URL.revokeObjectURL(url);
     toast({ title: 'CSV exportado com sucesso!' });
+  };
+
+  const handleLogout = async () => {
+    await signOut();
+    toast({ title: 'Desconectado com sucesso!' });
   };
 
   return (
@@ -46,6 +53,11 @@ export function Header({ products = [] }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-2">
+          {user && (
+            <span className="text-xs text-primary-foreground/70 hidden sm:inline mr-2">
+              {user.email}
+            </span>
+          )}
           <Button
             variant="ghost"
             size="icon"
@@ -64,6 +76,17 @@ export function Header({ products = [] }: HeaderProps) {
           >
             {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
           </Button>
+          {user && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleLogout}
+              className="text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10"
+              title="Sair"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          )}
         </div>
       </div>
     </header>
