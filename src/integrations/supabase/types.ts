@@ -14,7 +14,158 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      historico_produtos: {
+        Row: {
+          autor: string
+          created_at: string
+          data_saida: string
+          id: string
+          produto_id: string
+          tipo: string
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          autor: string
+          created_at?: string
+          data_saida?: string
+          id?: string
+          produto_id: string
+          tipo: string
+          user_id: string
+          valor: number
+        }
+        Update: {
+          autor?: string
+          created_at?: string
+          data_saida?: string
+          id?: string
+          produto_id?: string
+          tipo?: string
+          user_id?: string
+          valor?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "historico_produtos_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      produtos: {
+        Row: {
+          categoria: string | null
+          comissao_shopee: number
+          created_at: string
+          custo_atual: number
+          custo_embalagem: number
+          custo_frete: number
+          data_modificacao: string | null
+          excluidos: string | null
+          foto: string | null
+          foto_lq: string | null
+          foto_site: string | null
+          id: string
+          link: string | null
+          margem: number
+          nome: string
+          preco_venda: number
+          quantidade: number
+          site_data: string | null
+          site_estoque: number | null
+          site_valor: number | null
+          status_site: string | null
+          taxas_adicionais: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          categoria?: string | null
+          comissao_shopee?: number
+          created_at?: string
+          custo_atual?: number
+          custo_embalagem?: number
+          custo_frete?: number
+          data_modificacao?: string | null
+          excluidos?: string | null
+          foto?: string | null
+          foto_lq?: string | null
+          foto_site?: string | null
+          id?: string
+          link?: string | null
+          margem?: number
+          nome: string
+          preco_venda?: number
+          quantidade?: number
+          site_data?: string | null
+          site_estoque?: number | null
+          site_valor?: number | null
+          status_site?: string | null
+          taxas_adicionais?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          categoria?: string | null
+          comissao_shopee?: number
+          created_at?: string
+          custo_atual?: number
+          custo_embalagem?: number
+          custo_frete?: number
+          data_modificacao?: string | null
+          excluidos?: string | null
+          foto?: string | null
+          foto_lq?: string | null
+          foto_site?: string | null
+          id?: string
+          link?: string | null
+          margem?: number
+          nome?: string
+          preco_venda?: number
+          quantidade?: number
+          site_data?: string | null
+          site_estoque?: number | null
+          site_valor?: number | null
+          status_site?: string | null
+          taxas_adicionais?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          cargo: string
+          created_at: string
+          email: string
+          id: string
+          nome: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cargo?: string
+          created_at?: string
+          email?: string
+          id?: string
+          nome?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cargo?: string
+          created_at?: string
+          email?: string
+          id?: string
+          nome?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
