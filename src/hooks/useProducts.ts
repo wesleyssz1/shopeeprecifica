@@ -3,18 +3,23 @@ import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/lib/shopee';
 import { useAuth } from './useAuth';
 
-// Map DB row to frontend Product
+function num(v: unknown, fallback = 0): number {
+  if (v === null || v === undefined) return fallback;
+  const n = typeof v === 'number' ? v : Number(v);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 function rowToProduct(row: any): Product {
   return {
-    id: row.id,
-    name: row.nome,
-    costPrice: Number(row.custo_atual),
-    packagingCost: Number(row.custo_embalagem),
-    shippingCost: Number(row.custo_frete),
-    sellingPrice: Number(row.preco_venda),
-    shopeeCommission: Number(row.comissao_shopee),
-    additionalFees: Number(row.taxas_adicionais),
-    quantity: row.quantidade,
+    id: String(row.id),
+    name: row.nome ?? 'Sem nome',
+    costPrice: num(row.custo_atual),
+    packagingCost: num(row.custo_embalagem),
+    shippingCost: num(row.custo_frete),
+    sellingPrice: num(row.preco_venda),
+    shopeeCommission: num(row.comissao_shopee, 12),
+    additionalFees: num(row.taxas_adicionais),
+    quantity: num(row.quantidade, 1),
     category: row.categoria || undefined,
     createdAt: row.created_at,
   };
