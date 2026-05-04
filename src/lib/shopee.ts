@@ -24,20 +24,42 @@ export interface ProfitAnalysis {
   profitPerUnit: number;
 }
 
+const safe = (n: unknown): number => {
+  const v = typeof n === 'number' ? n : Number(n);
+  return Number.isFinite(v) ? v : 0;
+};
+
 export function calculateProfit(product: Product): ProfitAnalysis {
-  const revenue = product.sellingPrice * product.quantity;
-  const shopeeFee = revenue * (product.shopeeCommission / 100);
-  const costPerUnit = product.costPrice + product.packagingCost + product.shippingCost;
-  const totalCost =
-    costPerUnit * product.quantity + shopeeFee + product.additionalFees;
+  const sellingPrice = safe(product.sellingPrice);
+  const quantity = safe(product.quantity);
+  const costPrice = safe(product.costPrice);
+  const packagingCost = safe(product.packagingCost);
+  const shippingCost = safe(product.shippingCost);
+  const shopeeCommission = safe(product.shopeeCommission);
+  const additionalFees = safe(product.additionalFees);
+
+  const revenue = sellingPrice * quantity;
+  const shopeeFee = revenue * (shopeeCommission / 100);
+  const costPerUnit = costPrice + packagingCost + shippingCost;
+  const totalCost = costPerUnit * quantity + shopeeFee + additionalFees;
   const netProfit = revenue - totalCost;
-  const profitPerUnit = product.quantity > 0 ? netProfit / product.quantity : 0;
+  const profitPerUnit = quantity > 0 ? netProfit / quantity : 0;
   const profitMargin = revenue > 0 ? (netProfit / revenue) * 100 : 0;
-  const markup = costPerUnit > 0 ? ((product.sellingPrice - costPerUnit) / costPerUnit) * 100 : 0;
+  const markup = costPerUnit > 0 ? ((sellingPrice - costPerUnit) / costPerUnit) * 100 : 0;
   const totalInvestment = totalCost - shopeeFee;
   const roi = totalInvestment > 0 ? (netProfit / totalInvestment) * 100 : 0;
 
-  return { revenue, totalCost, shopeeFee, netProfit, profitMargin, markup, roi, costPerUnit, profitPerUnit };
+  return {
+    revenue: safe(revenue),
+    totalCost: safe(totalCost),
+    shopeeFee: safe(shopeeFee),
+    netProfit: safe(netProfit),
+    profitMargin: safe(profitMargin),
+    markup: safe(markup),
+    roi: safe(roi),
+    costPerUnit: safe(costPerUnit),
+    profitPerUnit: safe(profitPerUnit),
+  };
 }
 
 /**
@@ -67,10 +89,11 @@ export function generateId(): string {
 }
 
 export function formatCurrency(value: number): string {
+  const v = Number.isFinite(value) ? value : 0;
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-  }).format(value);
+  }).format(v);
 }
 
 export function exportProductsToCSV(products: Product[]): string {
