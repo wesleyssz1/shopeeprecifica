@@ -89,10 +89,11 @@ export function generateId(): string {
 }
 
 export function formatCurrency(value: number): string {
+  const v = Number.isFinite(value) ? value : 0;
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
-  }).format(value);
+  }).format(v);
 }
 
 export function exportProductsToCSV(products: Product[]): string {
